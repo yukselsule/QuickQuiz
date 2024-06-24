@@ -1,13 +1,17 @@
 "use strict";
 
-import { shuffleArray } from "./helpers.js";
+import { shuffleArray, setLocalStorage, resetLocalStorage } from "./helpers.js";
 
 const question = document.querySelector(".question");
 const questionBox = document.querySelector(".question-box");
-// const options = document.querySelector(".options");
-const option = document.querySelector(".option");
+const options = document.querySelectorAll(".option");
 // const lastScore = document.querySelector(".last-score");
-let currentQuestion;
+
+const results = document.querySelector(".results");
+let currentIndex = 0;
+let quiz = [];
+let questions = [];
+let answers = [];
 
 const fetchQuestions = async function () {
   try {
@@ -15,38 +19,72 @@ const fetchQuestions = async function () {
       "https://opentdb.com/api.php?amount=10&type=multiple"
     );
     const data = await res.json();
-    const questions = data.results;
+    quiz = data.results;
 
-    renderQuiz(questions);
+    renderQuiz(quiz);
   } catch (err) {
     console.error(err);
   }
 };
 
-fetchQuestions();
+const init = function () {
+  resetLocalStorage("answers");
+  resetLocalStorage("questions");
+  results.classList.add("hidden");
+  fetchQuestions();
+};
 
-function renderQuiz(questions) {
-  currentQuestion = questions[0];
+init();
 
-  renderQuestion(currentQuestion);
+function updateUI() {
+  if (currentIndex <= quiz.length - 1) renderQuiz(quiz);
 
-  // questions.map((question) => renderQuestion(question));
+  if (currentIndex === quiz.length) renderResultsPage();
+}
+
+function renderQuiz(quiz) {
+  renderQuestion(quiz[currentIndex]);
+}
+
+function renderResultsPage() {
+  questionBox.innerHTML = "";
+  results.classList.remove("hidden");
+
+  const html = `
+      <div class="score">45 / 100</div>
+
+      <ol class="questions_list">
+        <li>
+          <div class="question-box">
+            <p class="question">${quiz[0].question} </p>
+            <p class="answer">${answers[0]}</p>
+          </div>
+        </li>
+      </ol>
+      <button>Try Again</button>`;
+
+  results.insertAdjacentHTML("afterbegin", html);
 }
 
 function renderQuestion(questionData) {
+  questionBox.innerHTML = "";
+
   const {
     question,
     incorrect_answers: incorrectAnswers,
     correct_answer: correctAnswer,
   } = questionData;
 
-  const answers = [...incorrectAnswers, correctAnswer];
-  shuffleArray(answers);
+  questions = [...questions, question];
+  setLocalStorage("questions", questions);
+
+  const options = [...incorrectAnswers, correctAnswer];
+  shuffleArray(options);
 
   const html = `
       <h2 class="question">${question}</h2>
-      <div class="options">${answers
-        .map((answer) => renderOptions(answer))
+      <div class="options">${options
+        .map((option) => renderOptions(option))
         .join("")}</div>
    `;
   questionBox.insertAdjacentHTML("afterbegin", html);
@@ -54,8 +92,8 @@ function renderQuestion(questionData) {
   submitAnswer();
 }
 
-function renderOptions(answer) {
-  return `<button class="option">${answer}</button>`;
+function renderOptions(option) {
+  return `<button class="option">${option}</button>`;
 }
 
 function submitAnswer() {
@@ -63,9 +101,12 @@ function submitAnswer() {
 
   options.forEach((option) =>
     option.addEventListener("click", function () {
-      console.log(option);
+      answers = [...answers, option.textContent];
+      setLocalStorage("answers", answers);
+
+      currentIndex++;
+
+      updateUI();
     })
   );
 }
-
-///////////// event handlers

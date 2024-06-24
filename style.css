@@ -89,3 +89,7 @@ main {
   padding: 1rem 0;
   border-radius: 6px;
 } */
+
+.hidden {
+  visibility: hidden;
+}
