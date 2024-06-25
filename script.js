@@ -105,19 +105,16 @@ function renderAnswers(questionData, i) {
   const userAnswers = JSON.parse(localStorage.getItem("answers"));
 
   return `<li>
-            <div class="question-box">
-               <p class="question">${question} </p>
-               ${
-                 correctAnswer !== userAnswers[i]
-                   ? ` <p class="answer answer--wrong">
-                     ${userAnswers[i]} &#x2716;
-                   </p>`
-                   : ""
-               }
-                <p class="answer answer--correct"> ${correctAnswer} &#x2714; </p>
-            </div> 
-          </li> 
-   `;
+  <div class="question-box">
+     <p class="question">${question}</p>
+     ${
+       correctAnswer !== userAnswers[i]
+         ? `<p class="answer answer--wrong">${userAnswers[i]} &#x2716;</p>`
+         : ""
+     }
+     <p class="answer answer--correct">${correctAnswer} &#x2714;</p>
+  </div> 
+</li>`;
 }
 
 function calcScore(questionData) {
