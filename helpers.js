@@ -12,3 +12,7 @@ export function setLocalStorage(name, item) {
 export function resetLocalStorage(name) {
   localStorage.removeItem(name);
 }
+
+export function getLocalStorage(name) {
+  localStorage.getItem(name);
+}

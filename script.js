@@ -1,6 +1,11 @@
 "use strict";
 
-import { shuffleArray, setLocalStorage, resetLocalStorage } from "./helpers.js";
+import {
+  shuffleArray,
+  setLocalStorage,
+  resetLocalStorage,
+  getLocalStorage,
+} from "./helpers.js";
 
 const question = document.querySelector(".question");
 const questionBox = document.querySelector(".question-box");
@@ -11,7 +16,9 @@ const results = document.querySelector(".results");
 let currentIndex = 0;
 let quiz = [];
 let questions = [];
+let correctAnswers = [];
 let answers = [];
+let score = 0;
 
 const fetchQuestions = async function () {
   try {
@@ -50,20 +57,41 @@ function renderResultsPage() {
   questionBox.innerHTML = "";
   results.classList.remove("hidden");
 
-  const html = `
-      <div class="score">45 / 100</div>
+  calcScore();
 
-      <ol class="questions_list">
-        <li>
-          <div class="question-box">
-            <p class="question">${quiz[0].question} </p>
-            <p class="answer">${answers[0]}</p>
-          </div>
-        </li>
+  const html = `
+      <div class="score"> ${score * 10} / 100 </div>
+      <ol class="questions_list">${quiz
+        .map((question, i) => renderAnswers(question, i))
+        .join("")}
+      
       </ol>
       <button>Try Again</button>`;
 
   results.insertAdjacentHTML("afterbegin", html);
+}
+
+function renderAnswers(questionData, i) {
+  const { question, correct_answer: correctAnswer } = questionData;
+  const userAnswers = JSON.parse(localStorage.getItem("answers"));
+
+  return `<li>
+            <div class="question-box">
+               <p class="question">${question} </p>
+               <p class="answer"> ${
+                 correctAnswer !== userAnswers[i]
+                   ? `${userAnswers[i]} &#x2716;`
+                   : ""
+               }  ${correctAnswer} &#x2714; </p>
+            </div> 
+          </li> 
+   `;
+}
+
+function calcScore(questionData) {
+  answers.map((answer, i) => {
+    answers[i] === correctAnswers[i] && score++;
+  });
 }
 
 function renderQuestion(questionData) {
@@ -79,6 +107,8 @@ function renderQuestion(questionData) {
   setLocalStorage("questions", questions);
 
   const options = [...incorrectAnswers, correctAnswer];
+  correctAnswers = [...correctAnswers, correctAnswer];
+
   shuffleArray(options);
 
   const html = `
