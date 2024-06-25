@@ -34,7 +34,6 @@ main {
 .app {
   display: flex;
   flex-direction: column;
-
   align-items: center;
   gap: 2rem;
 }
@@ -88,4 +87,32 @@ main {
   width: 50%;
   padding: 1rem 0;
   border-radius: 6px;
+}
+
+.spinner::before {
+  content: "\25CC";
+  color: #f55003;
+}
+.spinner {
+  font-style: normal;
+  font-size: 5rem;
+  animation: rotation 5s infinite linear;
+  margin: auto;
+}
+
+@keyframes rotation {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(359deg);
+  }
+}
+
+.wrapper {
+  height: 250px;
+  width: 250px;
+  margin: auto;
+  display: flex;
 }

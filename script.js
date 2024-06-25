@@ -10,6 +10,7 @@ import {
 const app = document.querySelector(".app");
 const questionBox = document.querySelector(".question-box");
 const results = document.querySelector(".results");
+const resultsPage = document.querySelector(".results-page");
 const again = document.querySelector(".again");
 const lastScoreBox = document.querySelector(".last-score-box");
 const lastScoreEl = document.getElementById("last-score");
@@ -22,6 +23,7 @@ let answers = [];
 let score = 0;
 
 const fetchQuestions = async function () {
+  renderSpinner();
   try {
     const res = await fetch(
       "https://opentdb.com/api.php?amount=10&type=multiple"
@@ -29,21 +31,11 @@ const fetchQuestions = async function () {
     const data = await res.json();
     quiz = data.results;
 
-    renderQuiz(quiz);
+    quiz.length > 0 ? renderQuiz(quiz) : renderSpinner();
   } catch (err) {
     console.error(err);
   }
 };
-
-// function renderAppPage() {
-//   const lastScore = getLocalStorage("score");
-//   lastScoreBox.innerHTML = "";
-//   if (!lastScore) return;
-
-//   const html = `<p>Your last score is: ${lastScore * 10} </p>`;
-
-//   lastScoreBox.insertAdjacentHTML("beforebegin", html);
-// }
 
 function renderLastScore() {
   const lastScore = getLocalStorage("score");
@@ -54,10 +46,17 @@ function renderLastScore() {
   }
 }
 
+function renderSpinner() {
+  const spinner = `<div class="wrapper">
+          <i class="spinner"></i>
+        </div>`;
+  questionBox.insertAdjacentHTML("afterbegin", spinner);
+}
+
 const init = function () {
   resetLocalStorage("answers");
   resetLocalStorage("questions");
-  results.classList.add("hidden");
+  resultsPage.classList.add("hidden");
 
   renderLastScore();
   fetchQuestions();
@@ -77,7 +76,10 @@ function renderQuiz(quiz) {
 
 function renderResultsPage() {
   questionBox.innerHTML = "";
-  results.classList.remove("hidden");
+  results.innerHTML = "";
+  lastScoreBox.classList.add("hidden");
+
+  resultsPage.classList.remove("hidden");
 
   calcScore();
 
