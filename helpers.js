@@ -14,5 +14,5 @@ export function resetLocalStorage(name) {
 }
 
 export function getLocalStorage(name) {
-  localStorage.getItem(name);
+  return localStorage.getItem(name);
 }

@@ -7,12 +7,13 @@ import {
   getLocalStorage,
 } from "./helpers.js";
 
-const question = document.querySelector(".question");
+const app = document.querySelector(".app");
 const questionBox = document.querySelector(".question-box");
-const options = document.querySelectorAll(".option");
-// const lastScore = document.querySelector(".last-score");
-
 const results = document.querySelector(".results");
+const again = document.querySelector(".again");
+const lastScoreBox = document.querySelector(".last-score-box");
+const lastScoreEl = document.getElementById("last-score");
+
 let currentIndex = 0;
 let quiz = [];
 let questions = [];
@@ -34,10 +35,31 @@ const fetchQuestions = async function () {
   }
 };
 
+// function renderAppPage() {
+//   const lastScore = getLocalStorage("score");
+//   lastScoreBox.innerHTML = "";
+//   if (!lastScore) return;
+
+//   const html = `<p>Your last score is: ${lastScore * 10} </p>`;
+
+//   lastScoreBox.insertAdjacentHTML("beforebegin", html);
+// }
+
+function renderLastScore() {
+  const lastScore = getLocalStorage("score");
+  if (!lastScore) lastScoreBox.classList.add("hidden");
+  if (lastScore) {
+    lastScoreBox.classList.remove("hidden");
+    lastScoreEl.innerText = lastScore * 10;
+  }
+}
+
 const init = function () {
   resetLocalStorage("answers");
   resetLocalStorage("questions");
   results.classList.add("hidden");
+
+  renderLastScore();
   fetchQuestions();
 };
 
@@ -64,9 +86,8 @@ function renderResultsPage() {
       <ol class="questions_list">${quiz
         .map((question, i) => renderAnswers(question, i))
         .join("")}
-      
       </ol>
-      <button>Try Again</button>`;
+      `;
 
   results.insertAdjacentHTML("afterbegin", html);
 }
@@ -92,6 +113,8 @@ function calcScore(questionData) {
   answers.map((answer, i) => {
     answers[i] === correctAnswers[i] && score++;
   });
+
+  setLocalStorage("score", score);
 }
 
 function renderQuestion(questionData) {
@@ -140,3 +163,14 @@ function submitAnswer() {
     })
   );
 }
+
+again.addEventListener("click", function () {
+  currentIndex = 0;
+  quiz = [];
+  questions = [];
+  correctAnswers = [];
+  answers = [];
+  score = 0;
+
+  init();
+});
