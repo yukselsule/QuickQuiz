@@ -117,7 +117,7 @@ function renderAnswers(questionData, i) {
 </li>`;
 }
 
-function calcScore(questionData) {
+function calcScore() {
   answers.map((answer, i) => {
     answers[i] === correctAnswers[i] && score++;
   });
