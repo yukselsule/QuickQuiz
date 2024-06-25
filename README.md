@@ -19,5 +19,5 @@ Quick Quiz is a web-based quiz game that allows users to test their general know
 
 ## Visit Quick Quiz
 
-You can visit Columba Bank <a href="https://columbabank.netlify.app/">here</a>
+You can visit Quick Quiz <a href="https://quickquizgame.netlify.app/">here</a>
 
