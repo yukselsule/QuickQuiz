@@ -65,9 +65,14 @@ const init = function () {
 init();
 
 function updateUI() {
-  if (currentIndex <= quiz.length - 1) renderQuiz(quiz);
+  if (currentIndex <= quiz.length - 1) renderAppPage();
 
   if (currentIndex === quiz.length) renderResultsPage();
+}
+
+function renderAppPage() {
+  resultsPage.classList.add("hidden");
+  renderQuiz(quiz);
 }
 
 function renderQuiz(quiz) {
@@ -75,6 +80,7 @@ function renderQuiz(quiz) {
 }
 
 function renderResultsPage() {
+  app.classList.add("hidden");
   questionBox.innerHTML = "";
   results.innerHTML = "";
   lastScoreBox.classList.add("hidden");
@@ -84,7 +90,7 @@ function renderResultsPage() {
   calcScore();
 
   const html = `
-      <div class="score"> ${score * 10} / 100 </div>
+      <div> Score: <span class="score">${score * 10}  / 100 </score></div>
       <ol class="questions_list">${quiz
         .map((question, i) => renderAnswers(question, i))
         .join("")}
@@ -101,11 +107,14 @@ function renderAnswers(questionData, i) {
   return `<li>
             <div class="question-box">
                <p class="question">${question} </p>
-               <p class="answer"> ${
+               ${
                  correctAnswer !== userAnswers[i]
-                   ? `${userAnswers[i]} &#x2716;`
+                   ? ` <p class="answer answer--wrong">
+                     ${userAnswers[i]} &#x2716;
+                   </p>`
                    : ""
-               }  ${correctAnswer} &#x2714; </p>
+               }
+                <p class="answer answer--correct"> ${correctAnswer} &#x2714; </p>
             </div> 
           </li> 
    `;
@@ -173,6 +182,7 @@ again.addEventListener("click", function () {
   correctAnswers = [];
   answers = [];
   score = 0;
+  app.classList.remove("hidden");
 
   init();
 });
