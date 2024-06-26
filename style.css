@@ -232,11 +232,13 @@ main {
   }
 
   main {
-    padding: 1rem 0;
+    padding: 3rem 0;
   }
+
   .results {
     border-radius: 0;
   }
+
   .questions_list {
     gap: 0;
   }
