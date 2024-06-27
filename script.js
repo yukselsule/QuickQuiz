@@ -7,6 +7,7 @@ import {
   getLocalStorage,
 } from "./helpers.js";
 
+// DOM elements
 const app = document.querySelector(".app");
 const questionBox = document.querySelector(".question-box");
 const results = document.querySelector(".results");
@@ -15,6 +16,7 @@ const again = document.querySelector(".again");
 const lastScoreBox = document.querySelector(".last-score-box");
 const lastScoreEl = document.getElementById("last-score");
 
+// State variables
 let currentIndex = 0;
 let quiz = [];
 let questions = [];
@@ -22,20 +24,51 @@ let correctAnswers = [];
 let answers = [];
 let score = 0;
 
+// Constants
+const FETCH_TIMEOUT = 3000;
+
+// functions
 const fetchQuestions = async function () {
   renderSpinner();
+
+  const timeoutPromise = new Promise((resolve, reject) => {
+    setTimeout(() => {
+      reject(new Error("Request timed out. Please try again."));
+    }, FETCH_TIMEOUT);
+  });
+
   try {
-    const res = await fetch(
+    const fetchPromise = fetch(
       "https://opentdb.com/api.php?amount=10&type=multiple"
     );
-    const data = await res.json();
-    quiz = data.results;
+    const response = await Promise.race([fetchPromise, timeoutPromise]);
 
-    quiz.length > 0 ? renderQuiz(quiz) : renderSpinner();
+    if (!response.ok) {
+      throw new Error("Failed to fetch quiz.");
+    }
+
+    const data = await response.json();
+    quiz = data.results;
+    quiz.length > 0 ? renderQuiz(quiz) : renderError("No quiz data available.");
   } catch (err) {
-    console.error(err);
+    renderError(err.message);
   }
 };
+
+function renderSpinner() {
+  const spinner = `<div class="wrapper">
+          <i class="spinner"></i>
+        </div>`;
+  questionBox.innerHTML = spinner;
+}
+
+function renderError(message) {
+  const errorMessage = `
+        <div class="error">
+          <p>${message}</p>
+        </div>`;
+  questionBox.innerHTML = errorMessage;
+}
 
 function renderLastScore() {
   const lastScore = getLocalStorage("score");
@@ -46,21 +79,14 @@ function renderLastScore() {
   }
 }
 
-function renderSpinner() {
-  const spinner = `<div class="wrapper">
-          <i class="spinner"></i>
-        </div>`;
-  questionBox.insertAdjacentHTML("afterbegin", spinner);
-}
-
-const init = function () {
+function init() {
   resetLocalStorage("answers");
   resetLocalStorage("questions");
   resultsPage.classList.add("hidden");
 
   renderLastScore();
   fetchQuestions();
-};
+}
 
 init();
 
@@ -77,53 +103,6 @@ function renderAppPage() {
 
 function renderQuiz(quiz) {
   renderQuestion(quiz[currentIndex]);
-}
-
-function renderResultsPage() {
-  app.classList.add("hidden");
-  questionBox.innerHTML = "";
-  results.innerHTML = "";
-  lastScoreBox.classList.add("hidden");
-
-  resultsPage.classList.remove("hidden");
-
-  calcScore();
-
-  const html = `
-      <div> Score: <span class="score">${score * 10}  / 100 </score></div>
-      <ol class="questions_list">${quiz
-        .map((question, i) => renderAnswers(question, i))
-        .join("")}
-      </ol>
-      `;
-
-  results.insertAdjacentHTML("afterbegin", html);
-}
-
-function renderAnswers(questionData, i) {
-  const { question, correct_answer: correctAnswer } = questionData;
-  const userAnswers = JSON.parse(localStorage.getItem("answers"));
-
-  return `<li>
-  <div class="question-box">
-     <p class="question">${question}</p>
-     <div class="answers">
-      ${
-        correctAnswer !== userAnswers[i]
-          ? `<p class="answer answer--wrong">${userAnswers[i]} &#x2716;</p>`
-          : ""
-      }
-     <p class="answer answer--correct">${correctAnswer} &#x2714;</p> </div>
-  </div> 
-</li>`;
-}
-
-function calcScore() {
-  answers.map((answer, i) => {
-    answers[i] === correctAnswers[i] && score++;
-  });
-
-  setLocalStorage("score", score);
 }
 
 function renderQuestion(questionData) {
@@ -144,7 +123,9 @@ function renderQuestion(questionData) {
   shuffleArray(options);
 
   const html = `
-      <h2 class="question">${question}</h2>
+      <h2 class="question"> <strong>${
+        currentIndex + 1
+      }.</strong> ${question}</h2>
       <div class="options">${options
         .map((option) => renderOptions(option))
         .join("")}</div>
@@ -172,6 +153,55 @@ function submitAnswer() {
     })
   );
 }
+
+function calcScore() {
+  answers.map((answer, i) => {
+    answers[i] === correctAnswers[i] && score++;
+  });
+
+  setLocalStorage("score", score);
+}
+
+function renderResultsPage() {
+  app.classList.add("hidden");
+  questionBox.innerHTML = "";
+  results.innerHTML = "";
+  lastScoreBox.classList.add("hidden");
+
+  resultsPage.classList.remove("hidden");
+
+  calcScore();
+
+  const html = `
+      <div> Score: <span class="score">${score}  / ${quiz.length} </score></div>
+      <ol class="questions_list">${quiz
+        .map((question, i) => renderAnswers(question, i))
+        .join("")}
+      </ol>
+      `;
+
+  results.insertAdjacentHTML("afterbegin", html);
+}
+
+function renderAnswers(questionData, i) {
+  const { question, correct_answer: correctAnswer } = questionData;
+  const userAnswers = JSON.parse(localStorage.getItem("answers"));
+
+  return `<li>
+  <div class="question-box">
+     <p class="question">${question}</p>
+     <div class="answers">
+      ${
+        correctAnswer !== userAnswers[i]
+          ? `<p class="answer answer--wrong">${userAnswers[i]} &#x2716;</p>`
+          : ""
+      }
+     <p class="answer answer--correct">${correctAnswer} &#x2714;</p> </div>
+  </div> 
+</li>`;
+}
+
+// event listeners
 
 again.addEventListener("click", function () {
   currentIndex = 0;
