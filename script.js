@@ -75,7 +75,7 @@ function renderLastScore() {
   if (!lastScore) lastScoreBox.classList.add("hidden");
   if (lastScore) {
     lastScoreBox.classList.remove("hidden");
-    lastScoreEl.innerText = lastScore * 10;
+    lastScoreEl.innerText = lastScore;
   }
 }
 
